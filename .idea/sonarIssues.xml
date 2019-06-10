@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="issues">
+    <option name="index">
+      <map>
+        <entry key="D:/Work/gwork/src/gitee.com/zlinkgroup/dorm/manage/main.go">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="D:/Work/gwork/src/gitee.com/zlinkgroup/dorm/manage/package.json">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="D:/Work/gwork/src/gitee.com/zlinkgroup/dorm/manage/src/assets/js/MapControls.js">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="D:/Work/gwork/src/gitee.com/zlinkgroup/dorm/manage/src/components/navmenu/index.js">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="D:/Work/gwork/src/gitee.com/zlinkgroup/dorm/manage/src/pages/index/page.vue">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="D:/Work/gwork/src/gitee.com/zlinkgroup/dorm/manage/vue.config.js">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/demo.html">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/demo2.html">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/demo3.html">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/demo4.html">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/js/three.js">
+          <value>
+            <set />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

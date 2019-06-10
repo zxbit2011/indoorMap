@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>three</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            background: #000e48;
+            background: url("bg.png");
+            background-size: cover;
+        }
+
+        html, body, #brtmap {
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+
+    <script src="js/three.js"></script>
+    <script src="js/MapControls.js"></script>
+
+</head>
+<body style="color: #F8D7DE">
+
+<div id="brtmap"></div>
+
+
+<script>
+
+    //自定义图形
+    function NewCustomGeometry(coordinates, height) {
+        //所有点
+        var vertices = [], topVers = [], bomVers = [];
+        for (var i = 0; i < coordinates.length; i++) {
+            bomVers.push(new THREE.Vector3(coordinates[i][0], coordinates[i][1], 0));
+            if (height) {
+                topVers.push(new THREE.Vector3(coordinates[i][0], coordinates[i][1], height));
+            }
+        }
+        vertices = bomVers.concat(topVers);
+
+        //侧面
+        var faces = [], data = [], length = bomVers.length;
+
+        for (var i = 0; i < length; i++) {                      //侧面生成三角形
+            if (i === length - 1) {
+                faces.push(new THREE.Face3(i, length, 0));
+                faces.push(new THREE.Face3(length, i, length + i));
+            } else {
+                faces.push(new THREE.Face3(i, length + i + 1, i + 1));
+                faces.push(new THREE.Face3(length + i + 1, i, length + i));
+            }
+        }
+
+        for (let i = 0; i < coordinates.length; i++) {
+            data.push(coordinates[i][0], coordinates[i][1]);
+        }
+
+        let triangles = THREE.Earcut.triangulate(data);
+
+        if (triangles && triangles.length !== 0) {
+            for (let i = 0; i < triangles.length; i++) {
+                var tlength = triangles.length;
+                if (i % 3 == 0 && i < tlength - 2) {
+                    //顶面
+                    faces.push(new THREE.Face3(triangles[i] + length, triangles[i + 1] + length, triangles[i + 2] + length));
+                }
+            }
+        }
+
+        var geometry = new THREE.Geometry();
+        geometry.vertices = vertices;
+        geometry.faces = faces;
+        //自动计算法向量
+        geometry.computeFaceNormals();
+        return geometry;
+    }
+
+
+</script>
+
+<script>
+    var group;
+    var loader = new THREE.FontLoader();
+    // container
+    var container = document.getElementById('brtmap');
+
+
+    var innerWidth = getClientWidth();
+    var innerHeight = getClientHeight();
+
+
+    function getClientWidth() {
+        return container.clientWidth;
+    }
+
+    function getClientHeight() {
+        return container.clientHeight;
+    }
+
+    // renderer
+    var renderer = new THREE.WebGLRenderer({
+        antialias: true, alpha: true,
+    });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setClearColor(0xFFFFFF, 0.0);
+
+    container.appendChild(renderer.domElement);
+
+    // scene
+    var scene = new THREE.Scene();
+
+    // camera
+    var camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 1, 1000);
+    camera.up.set(0, 0, 1);
+    camera.position.set(0, 0, 0);
+    camera.position.z = 180;
+    camera.position.x = -200;
+    camera.position.y = -200;
+
+    // light 环境光
+    var ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+    scene.add(ambientLight);
+    //左下 直射光
+    var leftLight = new THREE.DirectionalLight(0xFFFFFF, 0.20);
+    leftLight.position.set(-5, -5, 10).normalize();
+    scene.add(leftLight);
+    //右下 直射光
+    var rightLight = new THREE.DirectionalLight(0xFFFFFF, 0.20);
+    rightLight.position.set(3, -5, 10).normalize();
+    scene.add(rightLight);
+
+    group = new THREE.Group();
+    scene.add(group);
+
+    var floorLength = 210;
+    var floorWidth = 200;
+
+    addFloor('1', 1)
+    addFloor('2', 2 * 28)
+    addFloor('3', 3 * 35)
+    addFloor('4', 4 * 35)
+
+    //添加楼层
+    function addFloor(level, z) {
+        // floor
+        var floorGeo = new NewCustomGeometry([[0, 0], [0, floorWidth], [floorLength, floorWidth], [floorLength, floorWidth], [floorLength, 0], [155, 0],
+            [155, 148], [55, 148], [55, 0], [0, 0]], 5);
+        var floorMesh1 = new THREE.Mesh(floorGeo, new THREE.MeshLambertMaterial({
+            color: '#0ea1fb',
+            opacity: 0.7,
+            transparent: true
+        }));
+        floorMesh1.position.z = z;
+        scene.add(floorMesh1);
+        floorGeo.center();
+        for (let i = 0; i < 12; i++) {
+            createRoom(level + i, level, z, -floorLength / 2 + 5, -(95 - (i * 16.2)), 20, 13, '#2bfff2');
+        }
+        for (let i = 0; i < 9; i++) {
+            if (i == 3) continue;
+            createRoom(level + i, level, z, -floorLength / 2 + 30, -(95 - (i * 16.2)), 20, 13, '#ffa440');
+        }
+        for (let i = 0; i < 12; i++) {
+            createRoom(level + i, level, z, floorLength / 2 - 5 - 20, -(95 - (i * 16.2)), 20, 13, '#ff0d37');
+        }
+        for (let i = 0; i < 9; i++) {
+            createRoom(level + i, level, z, floorLength / 2 - 5 - 45, -(95 - (i * 16.2)), 20, 13, '#2bfff2');
+        }
+        for (let i = 0; i < 8; i++) {
+            if (i == 3) continue;
+            createRoom(level + i, level, z, -floorLength / 2 + (i > 2 ? 21 : 12) + (18 * (i + 1)), floorWidth / 2 - 32, i == 2 ? 24 : 15, 29, '#2bfff2', 'right');
+        }
+    }
+
+
+    function createRoom(name, level, z, x, y, length, width, color, direction) {
+        var floorGeo2 = new NewCustomGeometry([[0, 0], [0, width], [length, width], [length, width], [length, 0], [0, 0]], 5);
+        var floorMesh2 = new THREE.Mesh(floorGeo2, new THREE.MeshLambertMaterial({
+            color: color,
+            opacity: 0.7,
+            transparent: true
+        }));
+        floorMesh2.name = 'room_' + name;
+        floorMesh2.colorName = color;
+        floorMesh2.colorType = color;
+        floorMesh2.position.x = x;
+        floorMesh2.position.y = y;
+        floorMesh2.position.z = z;
+
+        var group1 = new THREE.Group();
+        group1.name = 'room';
+        group1.colorName = color;
+        group1.colorType = color;
+        group1.add(floorMesh2);
+        group.add(group1);
+
+        scene.add(floorMesh2);
+
+        floorMesh2.add(createFont(level, z, [name], direction, length, width));
+    }
+
+
+    function createFont(level, z, names, direction, length, width) {
+        let canvas = document.createElement('canvas');
+        canvas.width = 128;
+        canvas.height = 128;
+        let context = canvas.getContext('2d');
+        context.font = '12px Microsoft YaHel';
+        context.fillStyle = "#f2f2ff";
+        context.textAlign = 'center';
+        if (direction == "right") {
+            context.rotate(Math.PI / 2);
+            context.fillText(names[0], 38, width - 102)
+        } else {
+            let top = (canvas.height - 37 * names.length) / 2;
+            for (let i = 0; i < names.length; i++) {
+                let newTop = (i + 1) * 10 + top;
+                let left = canvas.width / 2 + 20;
+                context.fillText(names[i], left, newTop);
+            }
+        }
+        context.fill();
+        let geo = new THREE.PlaneGeometry(canvas.width / 2, canvas.height / 2);
+        let texture = new THREE.CanvasTexture(canvas);
+        let material = new THREE.MeshBasicMaterial({
+            map: texture,
+            transparent: true,
+            depthWrite: false
+        });
+
+        let mesh = new THREE.Mesh(geo, material);
+        mesh.scale.x = 1;
+        mesh.scale.y = 1;
+        mesh.scale.z = z + 0.1;
+        mesh.position.set(0, 0, 6);
+        return mesh;
+    }
+
+
+    // controls
+    controls = new THREE.MapControls(camera, renderer.domElement);
+    controls.panSpeed = 0;
+    controls.zoomSpeed = 1;
+    controls.rotateSpeed = 1;
+
+    controls.minDistance = 100;
+    controls.maxDistance = 1000;
+    controls.maxPolarAngle = Math.PI / 2;
+    controls.addEventListener('change', render);
+
+
+    // render
+    function render() {
+        renderer.render(scene, camera);
+    }
+
+    var animate = function () {
+        requestAnimationFrame(animate);
+        scene.rotation.z += 0.001;
+
+        render();
+    };
+
+    animate();
+
+    render();
+
+    // window resize
+    window.addEventListener('resize', function () {
+        innerWidth = getClientWidth();
+        innerHeight = getClientHeight();
+        camera.aspect = innerWidth / innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(innerWidth, innerHeight);
+        render();
+    }, false);
+
+    var objects = [], object = null;
+    raycaster = new THREE.Raycaster();
+    mouse = new THREE.Vector2();
+    //监听全局点击事件,通过ray检测选中哪一个object
+    document.addEventListener("mousemove", (event) => {
+        event.preventDefault();
+        this.mouse.x = (event.clientX / this.renderer.domElement.clientWidth) * 2 - 1;
+        this.mouse.y = -(event.clientY / this.renderer.domElement.clientHeight) * 2 + 1;
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+        this.scene.children.forEach(child => {
+            if (child instanceof THREE.Mesh) {//根据需求判断哪些加入objects,也可以在生成object的时候push进objects
+                this.objects.push(child)
+            }
+        })
+        var intersects = this.raycaster.intersectObjects(this.objects);
+
+
+        if (intersects.length > 0) {
+            object = intersects[0].object
+            console.log(object)
+            if (object.name.indexOf('room') > -1) {
+                object.material.color.set("#a235dd");
+                clearMoveColor(object.material.uuid);
+            }
+            render();
+        }
+    }, false)
+
+    function clearMoveColor(uuid) {
+        this.scene.children.forEach(child => {
+            if (child instanceof THREE.Mesh) {
+                if (child.uuid == uuid)
+                    console.log(child.material.uuid == uuid ? "true" : "false")
+                if (child.material.uuid != uuid && child.name.indexOf('room') > -1) {
+                    child.material.color.set(child.colorType);
+                }
+            }
+        })
+    }
+</script>
+
+
+</body>
+</html>
